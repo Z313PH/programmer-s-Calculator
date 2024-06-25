@@ -1,63 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
     const numberInput = document.getElementById('numberInput');
+    let currentOperation = null;
+    let previousInput = '';
 
-    // Append number to the display
     function appendNumber(number) {
-        if (numberInput.value === '0' || numberInput.value === resultShown) {
-            numberInput.value = number;
-        } else {
+        if (currentOperation === null) {
             numberInput.value += number;
+        } else {
+            if (previousInput === numberInput.value) {
+                numberInput.value += number;
+            } else {
+                numberInput.value = previousInput + ' ' + currentOperation + ' ' + number;
+            }
         }
-        resultShown = false;
+        updateConversions();
     }
 
-    // Store current number and operation
-    let currentOperation = null;
-    let storedNumber = null;
-    let resultShown = false;
-
-    function applyOperator(operator) {
-        if (!resultShown && storedNumber !== null) {
+    function appendOperation(operation) {
+        if (currentOperation !== null) {
             calculateResult();
         }
-        storedNumber = numberInput.value;
-        currentOperation = operator;
-        resultShown = false;
+        previousInput = numberInput.value;
+        currentOperation = operation;
     }
 
-    // Calculate and display the result
     function calculateResult() {
-        if (currentOperation && storedNumber !== null) {
-            const currentNumber = numberInput.value;
-            const result = eval(`${storedNumber} ${currentOperation} ${currentNumber}`);
-            numberInput.value = result;
-            storedNumber = null;
-            resultShown = true;
-        }
+        const parts = numberInput.value.split(' ');
+        const result = eval(parts.join(''));  // Simple evaluation, replace with safer method in production
+        numberInput.value = result;
+        previousInput = '';
+        currentOperation = null;
+        updateConversions();
     }
 
-    // Attach event listeners to number buttons
-    document.querySelectorAll('.number-keys button').forEach(button => {
-        button.addEventListener('click', () => appendNumber(button.textContent));
-    });
-
-    // Attach event listeners to operator buttons
-    document.querySelectorAll('.operator-keys button').forEach(button => {
-        button.addEventListener('click', () => applyOperator(button.textContent));
-    });
-
-    // Equals button
-    document.querySelector('.operator-keys button[onclick*="calculateResult"]').addEventListener('click', calculateResult);
-
-    // Switching modes if implemented
-    function switchMode(mode) {
-        console.log("Switching mode to:", mode);
-        // Mode switching logic goes here
+    function updateConversions() {
+        const decimalValue = parseInt(numberInput.value, 16); // Assuming hex input for simplicity, adjust as needed
+        document.getElementById('decimalOutput').textContent = decimalValue;
+        document.getElementById('hexOutput').textContent = decimalValue.toString(16);
+        document.getElementById('binaryOutput').textContent = decimalValue.toString(2);
+        document.getElementById('floatOutput').textContent = parseFloat(decimalValue).toFixed(2);
     }
 
-    // Attach event listeners to mode buttons
-    document.querySelectorAll('.mode-keys button').forEach(button => {
-        button.addEventListener('click', () => switchMode(button.textContent.toLowerCase()));
-    });
+    // Setup buttons for numbers and operations
 });
 
